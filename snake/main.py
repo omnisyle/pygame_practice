@@ -3,27 +3,33 @@ import sys
 
 import grid
 import cube
+import food
+import snake
 
 pygame.init()
+
+def hit_food(snake, food):
+	snack_pos = food.position
+	snake_head = snake.get_head()
+	head_pos = snake_head.position
+	return head_pos[0] == snack_pos[0] and head_pos[1] == snack_pos[1]
 
 def main():
 	width = 800
 	height = 600
 	gridColor = (43,43,43)
-	frameRate = 20
-	gridSize = 15
+	frameRate = 10
+	gridSize = 20
 	gameOver = False
 
 	window = pygame.display.set_mode((width, height))
 	clock = pygame.time.Clock()
 
 	ggrid = grid.Grid(gridSize, gridColor, width, height)
-	ccube = cube.Cube((0,0), 0, 0, (255,0,0), gridSize)
-	#snake = Snake((255,0,0), (0,0))
+	my_snake = snake.Snake(3, (400, 300), gridSize)
+	snack = food.Food(width, height, gridSize, (200, 300))
 
 	while not gameOver:
-
-		# snake.move()
 
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
@@ -32,30 +38,32 @@ def main():
 
 			if event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_LEFT:
-					ccube.dirnx = -gridSize
-					ccube.dirny = 0
+					my_snake.move_left()
 
 				elif event.key == pygame.K_RIGHT:
-					ccube.dirnx = gridSize
-					ccube.dirny = 0
+					my_snake.move_right()
 
 				elif event.key == pygame.K_UP:
-					ccube.dirnx = 0
-					ccube.dirny = -gridSize
+					my_snake.move_up()
 
 				elif event.key == pygame.K_DOWN:
-					ccube.dirnx = 0
-					ccube.dirny = gridSize
+					my_snake.move_down()
 
-		cube_pos = ccube.pos
-		if cube_pos[0] < 0 or cube_pos[0] > width or cube_pos[1] > height or cube_pos[1] < 0:
+		# check for game over
+
+		if my_snake.has_hit_wall(width, height):
 			gameOver = True
 
+		# check collision between cube and snack
+		if hit_food(my_snake, snack):
+			snack.move_random()
+			my_snake.eat()
+
 		window.fill((0,0,0))
-		ccube.move()
-		ccube.draw(window)
+		my_snake.move()
+		my_snake.draw(window)
+		snack.draw(window)
 		ggrid.draw(window)
-		#snake.draw(window)
 
 		pygame.display.update()
 		clock.tick(frameRate)
