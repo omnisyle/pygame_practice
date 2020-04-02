@@ -1,10 +1,12 @@
 import pygame
 import sys
+from os import path
 
 import grid
 import cube
 import food
 import snake
+import sprites
 
 pygame.init()
 
@@ -18,7 +20,7 @@ def main():
 	width = 800
 	height = 600
 	gridColor = (43,43,43)
-	frameRate = 10
+	frameRate = 20
 	gridSize = 20
 	gameOver = False
 
@@ -26,8 +28,11 @@ def main():
 	clock = pygame.time.Clock()
 
 	ggrid = grid.Grid(gridSize, gridColor, width, height)
-	my_snake = snake.Snake(3, (400, 300), gridSize)
-	snack = food.Food(width, height, gridSize, (200, 300))
+	folder = path.dirname(__file__)
+	img_path = path.join(folder, 'assets/snake_sprite.png')
+	spritesheet = sprites.SpriteSheet(img_path)
+	my_snake = snake.Snake(3, (400, 300), gridSize, spritesheet)
+	snack = food.Food(width, height, gridSize, spritesheet, (200, 300))
 
 	while not gameOver:
 
@@ -61,9 +66,9 @@ def main():
 
 		window.fill((0,0,0))
 		my_snake.move()
-		my_snake.draw(window)
-		snack.draw(window)
 		ggrid.draw(window)
+		snack.draw(window)
+		my_snake.draw(window)
 
 		pygame.display.update()
 		clock.tick(frameRate)

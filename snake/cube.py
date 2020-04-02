@@ -13,6 +13,9 @@ class Cube(object):
 
 		pygame.draw.rect(surface, self.color, (i, j, dis, dis))
 
+	def draw_image(self, surface, image):
+		surface.blit(image, self.position)
+
 	def __str__(self):
 		return 'Cube("%s","%s")' % (self.position[0], self.position[1])
 
