@@ -61,7 +61,7 @@ class Snake(object):
     self.body.pop()
 
   def draw(self, surface):
-    print(self.body)
+
     for i, segment in enumerate(self.body):
       seg_pos = segment.position
       segx = seg_pos[0]

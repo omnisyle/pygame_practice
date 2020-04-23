@@ -16,13 +16,22 @@ def hit_food(snake, food):
 	head_pos = snake_head.position
 	return head_pos[0] == snack_pos[0] and head_pos[1] == snack_pos[1]
 
+def displayScore(score, surface):
+	folder = path.dirname(__file__)
+	font_path = path.join(folder, 'assets/ArialUnicode.ttf')
+	font = pygame.font.Font(font_path, 30)
+	text = "Score: %s" % score
+	textSurface = font.render(text, True, (255,255,255))
+	surface.blit(textSurface, (10, 10))
+
 def main():
 	width = 800
 	height = 600
 	gridColor = (43,43,43)
-	frameRate = 20
+	frameRate = 10
 	gridSize = 20
 	gameOver = False
+	score = 0
 
 	window = pygame.display.set_mode((width, height))
 	clock = pygame.time.Clock()
@@ -63,12 +72,14 @@ def main():
 		if hit_food(my_snake, snack):
 			snack.move_random()
 			my_snake.eat()
+			score += 1
 
 		window.fill((0,0,0))
 		my_snake.move()
 		ggrid.draw(window)
 		snack.draw(window)
 		my_snake.draw(window)
+		displayScore(score, window)
 
 		pygame.display.update()
 		clock.tick(frameRate)
