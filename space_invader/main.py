@@ -28,20 +28,18 @@ class SpaceInvader(object):
     self.game_over = False
     self.clock = pygame.time.Clock()
     self.background = pygame.image.load(IMAGE_PATH + 'background.jpg').convert()
-    self.player = Ship(self.screen)
-    self.keys = pygame.key.get_pressed()
+    self.player = Ship()
     self.allSprites = pygame.sprite.Group(self.player)
 
   def main(self):
     while True:
-      self.keys = pygame.key.get_pressed()
-
       for e in pygame.event.get():
         if e.type == pygame.QUIT:
             sys.exit()
 
       self.screen.blit(self.background, (0,0))
-      self.allSprites.update(self.keys)
+      self.allSprites.update()
+      self.allSprites.draw(self.screen)
       pygame.display.update()
       self.clock.tick(60)
 
