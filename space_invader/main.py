@@ -4,6 +4,7 @@ from os.path import abspath, dirname
 
 from ship import *
 from bullet import *
+from enemy import EnemyGroup
 
 BASE_PATH = abspath(dirname(__file__))
 FONT_PATH = BASE_PATH + '/fonts/'
@@ -21,6 +22,16 @@ RED = (237, 28, 36)
 SCREEN = pygame.display.set_mode((800, 600))
 pygame.display.set_caption("Space Invader")
 
+LEVELS = {
+  1: [
+    [None, 'purple', 'purple', 'purple'],
+    ['green', 'purple', 'green', 'purple'],
+    ['green', 'teal', 'green', 'purple'],
+    ['green', None, 'green', None],
+    ['green', 'purple', 'green', 'purple'],
+  ]
+}
+
 class SpaceInvader(object):
   def __init__(self):
     pygame.init()
@@ -35,6 +46,7 @@ class SpaceInvader(object):
     self.bullets = pygame.sprite.Group()
     self.shipAlive = True
     self.sounds = self.create_audio()
+    self.level = 1
 
   def create_audio(self):
     sounds = {}
@@ -46,6 +58,18 @@ class SpaceInvader(object):
       sounds[sound_name].set_volume(0.2)
 
     return sounds
+
+  def make_enemies(self):
+    level = LEVELS[self.level]
+    self.enemies = EnemyGroup(
+      (65, 30),
+      level,
+      10,
+      600,
+      15,
+      10,
+    )
+    self.allSprites.add(self.enemies)
 
   def main(self):
     while True:
@@ -60,6 +84,9 @@ class SpaceInvader(object):
               self.bullets.add(playerBullet)
               self.allSprites.add(self.bullets)
               self.sounds['shoot'].play()
+
+          if e.key == pygame.K_SEMICOLON:
+            self.make_enemies()
 
 
       self.screen.blit(self.background, (0,0))
