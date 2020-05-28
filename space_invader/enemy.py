@@ -69,6 +69,7 @@ class EnemyGroup(pygame.sprite.Group):
     self.move_time = move_time
     self.y_gutter = y_gutter
     self.x_gutter = x_gutter
+    self.direction = 1
 
     self.init_enemies()
 
@@ -95,9 +96,18 @@ class EnemyGroup(pygame.sprite.Group):
 
         grid_pointer = (xpos, grid_pointer[1])
 
-      # reset pointer to initial x position
+      # reset pointer to initial x position and move y position down
       xpos = self.start_position[0]
       ypos = self.start_position[1] + ENEMY_SIZE[1] * (row + 1)
       if row < len(self.enemy_map):
         ypos += (self.y_gutter * (row + 1))
       grid_pointer = (xpos, ypos)
+
+  def update(self, current_time):
+    if (current_time - self.timer) > self.move_time:
+      velocity = self.velocity * self.direction
+      for enemy in self:
+        enemy.move(velocity, 0)
+        enemy.toggle_image()
+
+      self.timer += self.move_time

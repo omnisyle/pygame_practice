@@ -47,6 +47,7 @@ class SpaceInvader(object):
     self.shipAlive = True
     self.sounds = self.create_audio()
     self.level = 1
+    self.make_enemies()
 
   def create_audio(self):
     sounds = {}
@@ -72,6 +73,7 @@ class SpaceInvader(object):
     self.allSprites.add(self.enemies)
 
   def main(self):
+
     while True:
       for e in pygame.event.get():
         if e.type == pygame.QUIT:
@@ -85,11 +87,9 @@ class SpaceInvader(object):
               self.allSprites.add(self.bullets)
               self.sounds['shoot'].play()
 
-          if e.key == pygame.K_SEMICOLON:
-            self.make_enemies()
-
-
+      current_time = pygame.time.get_ticks()
       self.screen.blit(self.background, (0,0))
+      self.enemies.update(current_time)
       self.allSprites.update()
       self.allSprites.draw(self.screen)
       pygame.display.update()
