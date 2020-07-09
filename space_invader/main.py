@@ -5,6 +5,7 @@ from os.path import abspath, dirname
 from ship import *
 from bullet import *
 from enemy import EnemyGroup
+from wall_sprite import WallSprite
 
 BASE_PATH = abspath(dirname(__file__))
 FONT_PATH = BASE_PATH + '/fonts/'
@@ -42,12 +43,15 @@ class SpaceInvader(object):
     self.clock = pygame.time.Clock()
     self.background = pygame.image.load(IMAGE_PATH + 'background.jpg').convert()
     self.player = Ship()
-    self.allSprites = pygame.sprite.Group(self.player)
+    right_edge = WallSprite(10, 600, (790,0))
+    left_edge = WallSprite(10, 600, (0,0))
+    self.edgesGroup = pygame.sprite.Group(left_edge, right_edge)
+    self.allSprites = pygame.sprite.Group(self.player, self.edgesGroup)
     self.bullets = pygame.sprite.Group()
     self.shipAlive = True
     self.sounds = self.create_audio()
     self.level = 1
-    self.make_enemies()
+    self.enemies = None
 
   def create_audio(self):
     sounds = {}
@@ -65,7 +69,7 @@ class SpaceInvader(object):
     self.enemies = EnemyGroup(
       (65, 30),
       level,
-      10,
+      50,
       600,
       15,
       10,
@@ -87,9 +91,13 @@ class SpaceInvader(object):
               self.allSprites.add(self.bullets)
               self.sounds['shoot'].play()
 
+          if e.key == pygame.K_SEMICOLON:
+            self.make_enemies()
+
       current_time = pygame.time.get_ticks()
       self.screen.blit(self.background, (0,0))
-      self.enemies.update(current_time)
+      if self.enemies:
+        self.enemies.update(current_time, self.edgesGroup)
       self.allSprites.update()
       self.allSprites.draw(self.screen)
       pygame.display.update()

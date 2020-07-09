@@ -103,11 +103,25 @@ class EnemyGroup(pygame.sprite.Group):
         ypos += (self.y_gutter * (row + 1))
       grid_pointer = (xpos, ypos)
 
-  def update(self, current_time):
+  def update(self, current_time, edgesGroup):
+    vertical_velocity = 0
+
     if (current_time - self.timer) > self.move_time:
+      group_collided = pygame.sprite.groupcollide(
+        self,
+        edgesGroup,
+        False,
+        False,
+      )
+
+      if (bool(group_collided)):
+        self.direction = self.direction * -1
+        vertical_velocity = 20
+
       velocity = self.velocity * self.direction
+
       for enemy in self:
-        enemy.move(velocity, 0)
+        enemy.move(velocity, vertical_velocity)
         enemy.toggle_image()
 
-      self.timer += self.move_time
+      self.timer = pygame.time.get_ticks()
