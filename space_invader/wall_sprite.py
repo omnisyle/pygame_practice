@@ -5,6 +5,7 @@ class WallSprite(pygame.sprite.Sprite):
     super().__init__()
     self.image = pygame.Surface([width, height])
     self.image.fill((255,0,0))
+    self.image.set_alpha(0)
     self.rect = self.image.get_rect(topleft=position)
 
   def update(self):

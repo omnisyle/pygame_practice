@@ -5,7 +5,9 @@ from os.path import abspath, dirname
 from ship import *
 from bullet import *
 from enemy import EnemyGroup
+from text import Text
 from wall_sprite import WallSprite
+from enemy_explosion import EnemyExplosion
 
 BASE_PATH = abspath(dirname(__file__))
 FONT_PATH = BASE_PATH + '/fonts/'
@@ -49,8 +51,10 @@ class SpaceInvader(object):
     self.allSprites = pygame.sprite.Group(self.player, self.edgesGroup)
     self.bullets = pygame.sprite.Group()
     self.shipAlive = True
+    self.total_score = 0
     self.sounds = self.create_audio()
     self.level = 1
+    self.enemy_explosions_group = pygame.sprite.Group()
     self.enemies = None
 
   def create_audio(self):
@@ -69,7 +73,7 @@ class SpaceInvader(object):
     self.enemies = EnemyGroup(
       (65, 30),
       level,
-      50,
+      20,
       600,
       15,
       10,
@@ -77,6 +81,8 @@ class SpaceInvader(object):
     self.allSprites.add(self.enemies)
 
   def main(self):
+    self.make_enemies()
+    score_text = Text(20, 'Score   ' + str(self.total_score), (255,255,255), 5, 5)
 
     while True:
       for e in pygame.event.get():
@@ -91,13 +97,34 @@ class SpaceInvader(object):
               self.allSprites.add(self.bullets)
               self.sounds['shoot'].play()
 
-          if e.key == pygame.K_SEMICOLON:
-            self.make_enemies()
+      enemies_bullets_killed = pygame.sprite.groupcollide(
+        self.enemies,
+        self.bullets,
+        True,
+        True)
+
+      if (bool(enemies_bullets_killed)):
+
+        for enemy in enemies_bullets_killed:
+          self.total_score += enemy.score
+          score_text = Text(20, 'Score   ' + str(self.total_score), (255,255,255), 5, 5)
+          EnemyExplosion(enemy, self.enemy_explosions_group)
+
+        print("Total score", self.total_score)
+        self.sounds['invaderkilled'].play()
 
       current_time = pygame.time.get_ticks()
+
+      # draw background
       self.screen.blit(self.background, (0,0))
-      if self.enemies:
-        self.enemies.update(current_time, self.edgesGroup)
+
+      # draw enemies
+      self.enemies.update(current_time, self.edgesGroup)
+
+      # draw enemy explosions
+      self.enemy_explosions_group.update(current_time, self.screen)
+
+      score_text.draw(self.screen)
       self.allSprites.update()
       self.allSprites.draw(self.screen)
       pygame.display.update()
