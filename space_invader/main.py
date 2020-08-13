@@ -3,7 +3,7 @@ import sys
 from os.path import abspath, dirname
 
 from ship import *
-from bullet import *
+from bullet import PlayerBullet, EnemyBullet
 from enemy import EnemyGroup
 from text import Text
 from wall_sprite import WallSprite
@@ -50,12 +50,15 @@ class SpaceInvader(object):
     self.edgesGroup = pygame.sprite.Group(left_edge, right_edge)
     self.allSprites = pygame.sprite.Group(self.player, self.edgesGroup)
     self.bullets = pygame.sprite.Group()
+    self.enemy_bullets = pygame.sprite.Group()
     self.shipAlive = True
     self.total_score = 0
     self.sounds = self.create_audio()
     self.level = 1
     self.enemy_explosions_group = pygame.sprite.Group()
     self.enemies = None
+    self.enemy_bullet_timer = pygame.time.get_ticks()
+    self.score_text = Text(20, 'Score   ' + str(self.total_score), (255,255,255), 5, 5)
 
   def create_audio(self):
     sounds = {}
@@ -80,9 +83,50 @@ class SpaceInvader(object):
     )
     self.allSprites.add(self.enemies)
 
+  def shoot_player_bullets(self):
+    if len(self.bullets) == 0 and self.shipAlive:
+      playerBullet = PlayerBullet(self.player, 15)
+      self.bullets.add(playerBullet)
+      self.allSprites.add(self.bullets)
+      self.sounds['shoot'].play()
+
+  def detect_enemy_hit(self):
+    enemies_bullets_killed = pygame.sprite.groupcollide(
+        self.enemies,
+        self.bullets,
+        True,
+        True)
+
+    if (bool(enemies_bullets_killed)):
+
+      for enemy in enemies_bullets_killed:
+        self.total_score += enemy.score
+        self.score_text = Text(20, 'Score   ' + str(self.total_score), (255,255,255), 5, 5)
+        EnemyExplosion(enemy, self.enemy_explosions_group)
+
+      print("Total score", self.total_score)
+      self.sounds['invaderkilled'].play()
+
+  def shoot_enemy_bullets(self):
+    current_time = pygame.time.get_ticks()
+    if (current_time - self.enemy_bullet_timer) > 700 and self.enemies and len(self.enemies) > 0:
+      enemy = self.enemies.random_enemy()
+      self.enemy_bullets.add(EnemyBullet(enemy, 10))
+      self.allSprites.add(self.enemy_bullets)
+      self.enemy_bullet_timer = pygame.time.get_ticks()
+
+  def detect_player_hit(self):
+    player_hit = pygame.sprite.spritecollide(
+        self.player,
+        self.enemy_bullets,
+        False)
+
+    if (bool(player_hit)):
+      print("Player hit")
+      self.sounds['shipexplosion'].play()
+
   def main(self):
     self.make_enemies()
-    score_text = Text(20, 'Score   ' + str(self.total_score), (255,255,255), 5, 5)
 
     while True:
       for e in pygame.event.get():
@@ -91,27 +135,11 @@ class SpaceInvader(object):
 
         if e.type == pygame.KEYDOWN:
           if e.key == pygame.K_SPACE:
-            if len(self.bullets) == 0 and self.shipAlive:
-              playerBullet = PlayerBullet(self.player, 15)
-              self.bullets.add(playerBullet)
-              self.allSprites.add(self.bullets)
-              self.sounds['shoot'].play()
+            self.shoot_player_bullets()
 
-      enemies_bullets_killed = pygame.sprite.groupcollide(
-        self.enemies,
-        self.bullets,
-        True,
-        True)
-
-      if (bool(enemies_bullets_killed)):
-
-        for enemy in enemies_bullets_killed:
-          self.total_score += enemy.score
-          score_text = Text(20, 'Score   ' + str(self.total_score), (255,255,255), 5, 5)
-          EnemyExplosion(enemy, self.enemy_explosions_group)
-
-        print("Total score", self.total_score)
-        self.sounds['invaderkilled'].play()
+      self.detect_enemy_hit()
+      self.shoot_enemy_bullets()
+      self.detect_player_hit()
 
       current_time = pygame.time.get_ticks()
 
@@ -124,7 +152,7 @@ class SpaceInvader(object):
       # draw enemy explosions
       self.enemy_explosions_group.update(current_time, self.screen)
 
-      score_text.draw(self.screen)
+      self.score_text.draw(self.screen)
       self.allSprites.update()
       self.allSprites.draw(self.screen)
       pygame.display.update()

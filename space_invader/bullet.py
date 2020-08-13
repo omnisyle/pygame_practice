@@ -1,6 +1,7 @@
 import pygame
 
 PLAYER_BULLET = "laser"
+ENEMY_BULLET = "enemylaser"
 
 class Bullet(pygame.sprite.Sprite):
   def __init__(self, xpos, ypos, direction, speed, filename):
@@ -22,3 +23,10 @@ class PlayerBullet(Bullet):
     ypos = player.rect.y + 5
     direction = -1
     super().__init__(xpos, ypos, direction, speed, PLAYER_BULLET)
+
+class EnemyBullet(Bullet):
+  def __init__(self, enemy, speed):
+    xpos = enemy.rect.x + 17
+    ypos = enemy.rect.y + 30
+    direction = 1
+    super().__init__(xpos, ypos, direction, speed, ENEMY_BULLET)

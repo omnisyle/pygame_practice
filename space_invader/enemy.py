@@ -1,4 +1,5 @@
 import pygame
+from random import choice
 
 ENEMY_FILES = {
   "purple": ["enemy1_1", "enemy1_2"],
@@ -102,6 +103,10 @@ class EnemyGroup(pygame.sprite.Group):
       if row < len(self.enemy_map):
         ypos += (self.y_gutter * (row + 1))
       grid_pointer = (xpos, ypos)
+
+  def random_enemy(self):
+    alive_enemies = self.sprites()
+    return choice(alive_enemies)
 
   def update(self, current_time, edgesGroup):
     vertical_velocity = 0
