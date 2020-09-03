@@ -8,6 +8,7 @@ from enemy import EnemyGroup
 from text import Text
 from wall_sprite import WallSprite
 from enemy_explosion import EnemyExplosion
+from life import Life
 
 BASE_PATH = abspath(dirname(__file__))
 FONT_PATH = BASE_PATH + '/fonts/'
@@ -48,7 +49,9 @@ class SpaceInvader(object):
     right_edge = WallSprite(10, 600, (790,0))
     left_edge = WallSprite(10, 600, (0,0))
     self.edgesGroup = pygame.sprite.Group(left_edge, right_edge)
-    self.allSprites = pygame.sprite.Group(self.player, self.edgesGroup)
+    self.lives = [Life(700, 5), Life(725, 5), Life(750, 5)]
+    self.lives_group = pygame.sprite.Group(*self.lives)
+    self.allSprites = pygame.sprite.Group(self.player, self.edgesGroup, self.lives_group)
     self.bullets = pygame.sprite.Group()
     self.enemy_bullets = pygame.sprite.Group()
     self.shipAlive = True
@@ -119,11 +122,14 @@ class SpaceInvader(object):
     player_hit = pygame.sprite.spritecollide(
         self.player,
         self.enemy_bullets,
-        False)
+        True)
 
     if (bool(player_hit)):
       print("Player hit")
       self.sounds['shipexplosion'].play()
+      if (len(self.lives) > 0):
+        life = self.lives.pop()
+        life.kill()
 
   def main(self):
     self.make_enemies()
