@@ -9,6 +9,7 @@ from text import Text
 from wall_sprite import WallSprite
 from enemy_explosion import EnemyExplosion
 from life import Life
+from ship_explosion import ShipExplosion
 
 BASE_PATH = abspath(dirname(__file__))
 FONT_PATH = BASE_PATH + '/fonts/'
@@ -60,6 +61,9 @@ class SpaceInvader(object):
     self.level = 1
     self.enemy_explosions_group = pygame.sprite.Group()
     self.enemies = None
+    self.ship_explosion = None
+    self.ship_timer = 0
+    self.make_new_ship = False
     self.enemy_bullet_timer = pygame.time.get_ticks()
     self.score_text = Text(20, 'Score   ' + str(self.total_score), (255,255,255), 5, 5)
 
@@ -87,7 +91,7 @@ class SpaceInvader(object):
     self.allSprites.add(self.enemies)
 
   def shoot_player_bullets(self):
-    if len(self.bullets) == 0 and self.shipAlive:
+    if len(self.bullets) == 0 and self.player.alive:
       playerBullet = PlayerBullet(self.player, 15)
       self.bullets.add(playerBullet)
       self.allSprites.add(self.bullets)
@@ -119,6 +123,9 @@ class SpaceInvader(object):
       self.enemy_bullet_timer = pygame.time.get_ticks()
 
   def detect_player_hit(self):
+    if not self.player.alive:
+      return
+
     player_hit = pygame.sprite.spritecollide(
         self.player,
         self.enemy_bullets,
@@ -130,6 +137,18 @@ class SpaceInvader(object):
       if (len(self.lives) > 0):
         life = self.lives.pop()
         life.kill()
+        self.player.alive = False
+        self.player.kill()
+        self.ship_timer = pygame.time.get_ticks()
+        self.ship_explosion = ShipExplosion(self.player)
+        self.make_new_ship = True
+
+  def create_player(self, current_time):
+
+    if (self.make_new_ship and current_time - self.ship_timer > 900):
+      self.player = Ship()
+      self.allSprites.add(self.player)
+      self.make_new_ship = False
 
   def main(self):
     self.make_enemies()
@@ -158,6 +177,11 @@ class SpaceInvader(object):
       # draw enemy explosions
       self.enemy_explosions_group.update(current_time, self.screen)
 
+      # draw ship explosion
+      if (self.ship_explosion):
+        self.ship_explosion.update(current_time, self.screen)
+
+      self.create_player(current_time)
       self.score_text.draw(self.screen)
       self.allSprites.update()
       self.allSprites.draw(self.screen)

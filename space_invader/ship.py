@@ -10,6 +10,7 @@ class Ship(pygame.sprite.Sprite):
     self.image = pygame.image.load(IMAGE_PATH + 'ship.png').convert_alpha()
     self.rect = self.image.get_rect(topleft=(375,540))
     self.speed = 5
+    self.alive = True
 
   def update(self, *args):
     keys = pygame.key.get_pressed()
