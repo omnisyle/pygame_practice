@@ -44,6 +44,7 @@ class SpaceInvader(object):
 
     self.screen = SCREEN
     self.game_over = False
+    self.win = False
     self.clock = pygame.time.Clock()
     self.background = pygame.image.load(IMAGE_PATH + 'background.jpg').convert()
     self.player = Ship()
@@ -91,7 +92,8 @@ class SpaceInvader(object):
     self.allSprites.add(self.enemies)
 
   def shoot_player_bullets(self):
-    if len(self.bullets) == 0 and self.player.alive:
+    if len(self.bullets) == 0 and self.player.alive \
+      and not self.game_over and not self.win:
       playerBullet = PlayerBullet(self.player, 15)
       self.bullets.add(playerBullet)
       self.allSprites.add(self.bullets)
@@ -150,6 +152,14 @@ class SpaceInvader(object):
       self.allSprites.add(self.player)
       self.make_new_ship = False
 
+  def check_game_over(self):
+    if (len(self.lives) < 1):
+      self.game_over = True
+
+  def check_game_won(self):
+    if (len(self.enemies) == 0):
+      self.win = True
+
   def main(self):
     self.make_enemies()
 
@@ -162,29 +172,42 @@ class SpaceInvader(object):
           if e.key == pygame.K_SPACE:
             self.shoot_player_bullets()
 
-      self.detect_enemy_hit()
-      self.shoot_enemy_bullets()
-      self.detect_player_hit()
+      if not self.game_over and not self.win:
 
-      current_time = pygame.time.get_ticks()
+        self.detect_enemy_hit()
+        self.shoot_enemy_bullets()
+        self.detect_player_hit()
 
-      # draw background
-      self.screen.blit(self.background, (0,0))
+        current_time = pygame.time.get_ticks()
 
-      # draw enemies
-      self.enemies.update(current_time, self.edgesGroup)
+        # draw background
+        self.screen.blit(self.background, (0,0))
 
-      # draw enemy explosions
-      self.enemy_explosions_group.update(current_time, self.screen)
+        # draw enemies
+        self.enemies.update(current_time, self.edgesGroup)
 
-      # draw ship explosion
-      if (self.ship_explosion):
-        self.ship_explosion.update(current_time, self.screen)
+        # draw enemy explosions
+        self.enemy_explosions_group.update(current_time, self.screen)
 
-      self.create_player(current_time)
-      self.score_text.draw(self.screen)
-      self.allSprites.update()
-      self.allSprites.draw(self.screen)
+        # draw ship explosion
+        if (self.ship_explosion):
+          self.ship_explosion.update(current_time, self.screen)
+
+        self.check_game_over()
+        self.check_game_won()
+        self.create_player(current_time)
+        self.score_text.draw(self.screen)
+        self.allSprites.update()
+        self.allSprites.draw(self.screen)
+
+      if self.game_over:
+        game_over_text = Text(40, 'GAME OVER', (255,255,255), 250, 300)
+        game_over_text.draw(self.screen)
+
+      if self.win:
+        win_text = Text(40, 'YOU WON!', (255,255,255), 250, 300)
+        win_text.draw(self.screen)
+
       pygame.display.update()
       self.clock.tick(60)
 
